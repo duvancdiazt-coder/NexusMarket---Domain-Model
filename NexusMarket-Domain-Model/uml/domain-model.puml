@@ -1,0 +1,154 @@
+@startuml NexusMarket-Domain-Model
+
+skinparam classAttributeIconSize 0
+
+package "Domain Model" {
+
+class User {
+  - identifier : String
+  - fullName : String
+  - email : Email
+  - role : UserRole
+  - status : UserStatus
+}
+
+class Buyer {
+  - primaryAddress : Address
+  - additionalAddresses : List<Address>
+  - commercialStatus : BuyerStatus
+}
+
+class Seller {
+  - status : SellerStatus
+}
+
+class Address {
+  - street : String
+  - city : String
+  - state : String
+  - postalCode : String
+  - country : String
+}
+
+class Warehouse {
+  - identifier : String
+  - name : String
+  - address : Address
+  - type : WarehouseType
+}
+
+class Product {
+  - identifier : String
+  - name : String
+  - description : String
+  - price : Money
+  - type : ProductType
+  - status : ProductStatus
+}
+
+class ProductVariant {
+  - identifier : String
+  - name : String
+  - attributes : Map<String, String>
+}
+
+class Inventory {
+  - identifier : String
+  - availableQuantity : int
+  - reservedQuantity : int
+  - status : InventoryStatus
+}
+
+class InventoryMovement {
+  - identifier : String
+  - type : InventoryMovementType
+  - quantity : int
+  - performedBy : User
+}
+
+class Cart {
+  - identifier : String
+}
+
+class CartItem {
+  - quantity : int
+}
+
+class Order {
+  - identifier : String
+  - total : Money
+  - status : OrderStatus
+  - creationDate : LocalDateTime
+}
+
+class OrderItem {
+  - quantity : int
+  - unitPrice : Money
+}
+
+class Invoice {
+  - identifier : String
+  - issueDate : LocalDateTime
+  - subtotal : Money
+  - total : Money
+}
+
+class Payment {
+  - identifier : String
+  - amount : Money
+  - paymentDate : LocalDateTime
+}
+
+class Shipment {
+  - identifier : String
+  - shipmentDate : LocalDateTime
+  - deliveryDate : LocalDateTime
+}
+
+class Return {
+  - identifier : String
+  - requestDate : LocalDateTime
+  - reason : String
+}
+
+class Refund {
+  - identifier : String
+  - amount : Money
+  - date : LocalDateTime
+}
+
+User "1" -- "0..1" Buyer
+User "1" -- "0..1" Seller
+
+Buyer "1" *-- "1" Address : primary
+Buyer "1" *-- "0..*" Address : additional
+
+Seller "1" -- "0..*" Product
+Seller "1" -- "0..*" Warehouse
+
+Warehouse "1" *-- "1" Address
+
+Product "1" *-- "0..*" ProductVariant
+Product "1" -- "0..*" Inventory
+Warehouse "1" -- "0..*" Inventory
+Inventory "1" *-- "0..*" InventoryMovement
+User "1" -- "0..*" InventoryMovement : performs
+
+Buyer "1" *-- "1" Cart
+Cart "1" *-- "0..*" CartItem
+CartItem "*" --> "1" Product
+CartItem "*" --> "0..1" ProductVariant
+
+Buyer "1" -- "0..*" Order
+Order "1" *-- "1..*" OrderItem
+OrderItem "*" --> "1" Product
+OrderItem "*" --> "0..1" ProductVariant
+
+Order "1" -- "0..1" Invoice
+Order "1" -- "0..1" Payment
+Order "1" -- "0..1" Shipment
+Order "1" -- "0..*" Return
+Return "1" -- "0..1" Refund
+
+}
+@enduml
