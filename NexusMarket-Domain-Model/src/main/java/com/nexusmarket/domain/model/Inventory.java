@@ -37,6 +37,38 @@ public class Inventory {
     public DomainCatalog getStatus() { return status; }
     public List<InventoryMovement> getMovements() { return List.copyOf(movements); }
 
+    public void adjust(int delta) {
+        if (delta==0) throw new IllegalArgumentException("Adjustment cannot be zero");
+        int updated=Math.addExact(availableQuantity,delta);
+        if(updated<0) throw new IllegalStateException("Negative inventory");
+        availableQuantity=updated;
+    }
+    public void receive(int quantity) {
+        requirePositive(quantity);
+        availableQuantity = Math.addExact(availableQuantity, quantity);
+    }
+    public void reserve(int quantity) {
+        requirePositive(quantity);
+        if (status.equals(com.nexusmarket.domain.valueobject.InventoryStatus.DAMAGED))
+            throw new IllegalStateException("Damaged inventory cannot be reserved");
+        if (quantity > availableQuantity) throw new IllegalStateException("Insufficient inventory");
+        availableQuantity -= quantity;
+        reservedQuantity = Math.addExact(reservedQuantity, quantity);
+    }
+    public void release(int quantity) {
+        requirePositive(quantity);
+        if (quantity > reservedQuantity) throw new IllegalStateException("Insufficient reserved inventory");
+        reservedQuantity -= quantity;
+        availableQuantity = Math.addExact(availableQuantity, quantity);
+    }
+    public void sellReserved(int quantity) {
+        requirePositive(quantity);
+        if (quantity > reservedQuantity) throw new IllegalStateException("Insufficient reserved inventory");
+        reservedQuantity -= quantity;
+    }
+    private static void requirePositive(int quantity) {
+        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be positive");
+    }
     public void addMovement(InventoryMovement movement) {
         movements.add(Objects.requireNonNull(movement));
     }

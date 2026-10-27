@@ -15,6 +15,8 @@ public class Cart {
         this.items = new ArrayList<>();
     }
 
+    public void removeItem(CartItem item) { items.remove(item); }
+    public void clear() { items.clear(); }
     public String getIdentifier() { return identifier; }
     public Buyer getBuyer() { return buyer; }
     public List<CartItem> getItems() { return List.copyOf(items); }

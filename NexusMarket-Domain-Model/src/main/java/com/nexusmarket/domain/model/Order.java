@@ -13,7 +13,7 @@ public class Order {
     private final Buyer buyer;
     private final List<OrderItem> items;
     private final Money total;
-    private final DomainCatalog status;
+    private DomainCatalog status;
     private final LocalDateTime creationDate;
 
     public Order(String identifier, Buyer buyer, List<OrderItem> items,
@@ -26,6 +26,23 @@ public class Order {
         this.creationDate = Objects.requireNonNull(creationDate);
     }
 
+    public void transitionTo(com.nexusmarket.domain.valueobject.OrderStatus next) {
+        var s = com.nexusmarket.domain.valueobject.OrderStatus.class;
+        if (status.equals(com.nexusmarket.domain.valueobject.OrderStatus.COMPLETED))
+            throw new IllegalStateException("Completed orders are immutable");
+        boolean valid =
+            status.equals(com.nexusmarket.domain.valueobject.OrderStatus.PENDING_PAYMENT)
+                && next.equals(com.nexusmarket.domain.valueobject.OrderStatus.PAID)
+            || status.equals(com.nexusmarket.domain.valueobject.OrderStatus.PAID)
+                && (next.equals(com.nexusmarket.domain.valueobject.OrderStatus.SHIPPED)
+                    || next.equals(com.nexusmarket.domain.valueobject.OrderStatus.COMPLETED))
+            || status.equals(com.nexusmarket.domain.valueobject.OrderStatus.SHIPPED)
+                && next.equals(com.nexusmarket.domain.valueobject.OrderStatus.DELIVERED)
+            || status.equals(com.nexusmarket.domain.valueobject.OrderStatus.DELIVERED)
+                && next.equals(com.nexusmarket.domain.valueobject.OrderStatus.COMPLETED);
+        if (!valid) throw new IllegalStateException("Invalid order transition");
+        status = next;
+    }
     public String getIdentifier() { return identifier; }
     public Buyer getBuyer() { return buyer; }
     public List<OrderItem> getItems() { return List.copyOf(items); }

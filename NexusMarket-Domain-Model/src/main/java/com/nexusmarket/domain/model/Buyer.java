@@ -26,6 +26,7 @@ public class Buyer {
         this.orders = new ArrayList<>();
     }
 
+    public void addAddress(Address address) { additionalAddresses.add(Objects.requireNonNull(address)); }
     public User getUser() { return user; }
     public Address getPrimaryAddress() { return primaryAddress; }
     public List<Address> getAdditionalAddresses() { return List.copyOf(additionalAddresses); }

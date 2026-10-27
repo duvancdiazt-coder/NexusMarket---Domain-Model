@@ -10,6 +10,8 @@ public final class InventoryStatus extends DomainCatalog {
         super(code, name, description);
     }
 
+    public static final InventoryStatus AVAILABLE = new InventoryStatus("AVAILABLE", "Available", "Usable stock.");
+
     public static InventoryStatus of(String code, String name, String description) {
         return new InventoryStatus(
                 Objects.requireNonNull(code),

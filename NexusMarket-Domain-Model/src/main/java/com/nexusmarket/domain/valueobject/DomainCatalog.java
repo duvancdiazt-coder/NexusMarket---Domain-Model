@@ -21,9 +21,9 @@ public abstract class DomainCatalog {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof DomainCatalog other)) return false;
-        return code.equals(other.code);
+        return getClass().equals(other.getClass()) && code.equals(other.code);
     }
 
     @Override
-    public int hashCode() { return code.hashCode(); }
+    public int hashCode() { return Objects.hash(getClass(), code); }
 }

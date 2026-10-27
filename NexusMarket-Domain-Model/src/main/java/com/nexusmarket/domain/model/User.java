@@ -15,7 +15,8 @@ public class User {
 
     public User(String identifier, String fullName, Email email, UserRole role, UserStatus status) {
         this.identifier = Objects.requireNonNull(identifier);
-        this.fullName = Objects.requireNonNull(fullName);
+        this.fullName = Objects.requireNonNull(fullName).trim();
+        if (this.fullName.isBlank() || identifier.isBlank()) throw new IllegalArgumentException("Identity and name required");
         this.email = Objects.requireNonNull(email);
         this.role = Objects.requireNonNull(role);
         this.status = Objects.requireNonNull(status);

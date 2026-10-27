@@ -13,7 +13,7 @@ public class Product {
     private final String description;
     private final Money price;
     private final DomainCatalog type;
-    private final DomainCatalog status;
+    private DomainCatalog status;
     private final Seller seller;
     private final List<ProductVariant> variants;
     private final List<Inventory> inventories;
@@ -31,6 +31,11 @@ public class Product {
         this.inventories = new ArrayList<>();
     }
 
+    public void changeStatus(com.nexusmarket.domain.valueobject.ProductStatus next) {
+        Objects.requireNonNull(next);
+        if (status.equals(com.nexusmarket.domain.valueobject.ProductStatus.DISCONTINUED)) throw new IllegalStateException("Discontinued product cannot be changed");
+        status=next;
+    }
     public String getIdentifier() { return identifier; }
     public String getName() { return name; }
     public String getDescription() { return description; }
