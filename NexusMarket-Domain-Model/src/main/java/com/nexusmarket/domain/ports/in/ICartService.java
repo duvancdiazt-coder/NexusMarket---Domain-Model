@@ -1,7 +1,7 @@
 package com.nexusmarket.domain.ports.in;
-import com.nexusmarket.domain.model.*;
-import com.nexusmarket.domain.valueobject.*;
-import java.util.*;
+import com.nexusmarket.domain.model.Cart;
+import com.nexusmarket.domain.model.CartItem;
+import com.nexusmarket.domain.model.User;
 public interface ICartService {
     Cart consult(User actor, String id);
     Cart addItem(User actor, String id, CartItem item);

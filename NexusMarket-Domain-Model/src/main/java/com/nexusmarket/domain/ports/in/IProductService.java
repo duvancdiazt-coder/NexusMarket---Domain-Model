@@ -1,7 +1,8 @@
 package com.nexusmarket.domain.ports.in;
-import com.nexusmarket.domain.model.*;
-import com.nexusmarket.domain.valueobject.*;
-import java.util.*;
+import com.nexusmarket.domain.model.Product;
+import com.nexusmarket.domain.model.ProductVariant;
+import com.nexusmarket.domain.model.User;
+import com.nexusmarket.domain.valueobject.ProductStatus;
 public interface IProductService {
     Product register(User actor, Product product);
     Product consult(User actor, String id);

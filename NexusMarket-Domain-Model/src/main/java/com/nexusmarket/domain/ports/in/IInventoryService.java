@@ -1,7 +1,6 @@
 package com.nexusmarket.domain.ports.in;
-import com.nexusmarket.domain.model.*;
-import com.nexusmarket.domain.valueobject.*;
-import java.util.*;
+import com.nexusmarket.domain.model.Inventory;
+import com.nexusmarket.domain.model.User;
 public interface IInventoryService {
     Inventory consult(User actor, String id);
     Inventory receive(User actor, String id, int quantity);

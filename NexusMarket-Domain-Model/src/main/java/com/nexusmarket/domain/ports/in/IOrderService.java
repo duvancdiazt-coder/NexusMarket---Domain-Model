@@ -1,7 +1,6 @@
 package com.nexusmarket.domain.ports.in;
-import com.nexusmarket.domain.model.*;
-import com.nexusmarket.domain.valueobject.*;
-import java.util.*;
+import com.nexusmarket.domain.model.Order;
+import com.nexusmarket.domain.model.User;
 public interface IOrderService {
     Order create(User actor, Order order);
     Order consult(User actor, String id);
