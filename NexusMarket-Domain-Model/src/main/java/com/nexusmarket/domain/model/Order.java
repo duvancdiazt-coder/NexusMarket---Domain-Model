@@ -27,7 +27,6 @@ public class Order {
     }
 
     public void transitionTo(com.nexusmarket.domain.valueobject.OrderStatus next) {
-        var s = com.nexusmarket.domain.valueobject.OrderStatus.class;
         if (status.equals(com.nexusmarket.domain.valueobject.OrderStatus.COMPLETED))
             throw new IllegalStateException("Completed orders are immutable");
         boolean valid =
