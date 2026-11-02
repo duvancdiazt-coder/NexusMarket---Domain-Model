@@ -20,8 +20,6 @@ Value Objects
 Domain Services
 ```
 
-The current delivery focuses on the domain model and does not implement application services, REST controllers, persistence, or infrastructure.
-
 ---
 
 ## 2. Main business classes
