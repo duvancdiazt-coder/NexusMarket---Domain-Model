@@ -1,0 +1,58 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: nexusmarket-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: nexusmarket
+      MYSQL_USER: ${MYSQL_USER:-nexusmarket}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-nexusmarket_dev}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_dev_only}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  mongodb:
+    image: mongo:8.0
+    container_name: nexusmarket-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-nexus_audit}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-nexus_audit_dev}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--username", "$${MONGO_INITDB_ROOT_USERNAME}", "--password", "$${MONGO_INITDB_ROOT_PASSWORD}", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build: .
+    container_name: nexusmarket-app
+    restart: unless-stopped
+    environment:
+      MYSQL_URL: jdbc:mysql://mysql:3306/nexusmarket?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      MYSQL_USER: ${MYSQL_USER:-nexusmarket}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-nexusmarket_dev}
+      MONGODB_URI: mongodb://${MONGO_USERNAME:-nexus_audit}:${MONGO_PASSWORD:-nexus_audit_dev}@mongodb:27017/nexusmarket_audit?authSource=admin
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  mongo_data:

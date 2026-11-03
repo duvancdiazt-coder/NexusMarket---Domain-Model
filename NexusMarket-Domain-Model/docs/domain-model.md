@@ -1,456 +1,176 @@
-# NexusMarket — Domain Model
+# NexusMarket — Value Objects
 
-## 1. What is the Domain Model?
+## 1. Purpose
 
-The domain model represents the business concepts that exist in NexusMarket, their relevant attributes, relationships, and business constraints.
+Value Objects represent controlled or immutable business concepts whose meaning is determined by their values.
 
-It is the foundation for later development of domain services, ports, adapters, and infrastructure.
-
-The model is derived from the functional specification and follows the methodology used in the course:
+The model avoids scattering arbitrary strings such as:
 
 ```text
-Functional Specification
-          ↓
-Domain Analysis
-          ↓
-Classes + Attributes + Relationships
-          ↓
-Value Objects
-          ↓
-Domain Services
+"ACTIVE"
+"BLOCKED"
+"PHYSICAL"
+"PUBLISHED"
 ```
 
----
-
-## 2. Main business classes
-
-### User
-
-Represents a person authorized to interact with the Marketplace.
-
-Attributes:
-
-- identifier
-- fullName
-- email
-- role
-- status
-
-Business rules:
-
-- Identification is unique.
-- Email is unique.
-- Every user has one role.
+throughout the domain.
 
 ---
 
-### Buyer
+## 2. Controlled domain catalogs
 
-Represents a registered buyer.
+### UserRole
 
-Attributes:
-
-- user
-- primaryAddress
-- additionalAddresses
-- commercialStatus
-
-Relationships:
-
-- One Buyer is associated with one User.
-- One Buyer has one primary Address.
-- One Buyer may have additional Addresses.
-- One Buyer owns one Cart.
-- One Buyer may create multiple Orders.
-
----
-
-### Seller
-
-Represents a seller incorporated into the Marketplace.
-
-Attributes:
-
-- user
-- status
-
-Relationships:
-
-- One Seller is associated with one User.
-- One Seller may manage multiple Products.
-- One Seller may have multiple Warehouses.
-
-Business rule:
-
-- Sellers cannot self-register. They are incorporated by an Administrator.
-
----
-
-### Address
-
-Represents a delivery or physical location.
-
-Attributes:
-
-- street
-- city
-- state
-- postalCode
-- country
-
-Used by:
-
-- Buyer
-- Warehouse
-
-The specification treats addresses as information associated with buyers and warehouses. The model does not introduce an independent business identity for an address.
-
----
-
-### Warehouse
-
-Represents a physical storage location.
-
-Attributes:
-
-- identifier
-- name
-- address
-- type
-
-Relationships:
-
-- One Warehouse has one Address.
-- One Warehouse may contain multiple Inventory records.
-- A Warehouse can belong to the Marketplace or to a Seller.
-
----
-
-### Product
-
-Represents a physical or digital good offered in the Marketplace.
-
-Attributes:
-
-- identifier
-- name
-- description
-- price
-- type
-- status
-
-Relationships:
-
-- One Product belongs to one Seller.
-- One Product may have multiple ProductVariants.
-- One Product may have multiple Inventory records.
-
----
-
-### ProductVariant
-
-Represents a product variation such as color, size, or model.
-
-Attributes:
-
-- identifier
-- name
-- attributes
-
-The functional specification explicitly identifies variants as differences such as color, size, and model.
-
----
-
-### Inventory
-
-Represents the existence of a product in a specific warehouse.
-
-Attributes:
-
-- identifier
-- product
-- warehouse
-- availableQuantity
-- reservedQuantity
-- status
-
-Relationships:
-
-- Each Inventory belongs to exactly one Product.
-- Each Inventory belongs to exactly one Warehouse.
-- Inventory has multiple InventoryMovements.
-
-Critical rule:
+Allowed values:
 
 ```text
-availableQuantity >= 0
+BUYER
+SELLER
+LOGISTIC_OPERATOR
+ADMINISTRATOR
+SUPERVISOR
 ```
 
-Inventory cannot be reserved if it does not exist or is marked as damaged.
+### UserStatus
 
----
+The functional specification explicitly mentions active and blocked users and indicates that additional states may exist.
 
-### InventoryMovement
+For the current implementation:
 
-Represents a change in inventory.
+```text
+ACTIVE
+BLOCKED
+```
 
-Attributes:
+No additional state is invented.
 
-- identifier
-- type
-- quantity
-- inventory
-- performedBy
+### BuyerStatus
 
-Defined movement types:
+Represents the buyer's commercial condition.
 
-- IN
-- RESERVATION
-- SALE_OUT
-- ADJUSTMENT
-- RETURN
+The specification requires a commercial status but does not define its complete catalog. The implementation therefore keeps this as a controlled value object without inventing additional values.
 
----
+### WarehouseType
 
-### Cart
+```text
+MARKETPLACE
+SELLER
+```
 
-Represents the buyer's provisional product selection.
+### ProductType
 
-Attributes:
+```text
+PHYSICAL
+DIGITAL
+```
 
-- identifier
-- buyer
-- items
+### ProductStatus
 
-Relationships:
+```text
+PUBLISHED
+SUSPENDED
+DISCONTINUED
+```
 
-- One Cart belongs to one Buyer.
-- One Cart contains multiple CartItems.
+### InventoryMovementType
 
----
+```text
+IN
+RESERVATION
+SALE_OUT
+ADJUSTMENT
+RETURN
+```
 
-### CartItem
+### InventoryStatus
 
-Represents one product selection inside the cart.
+The functional specification explicitly identifies `DAMAGED` because damaged inventory cannot be reserved.
 
-Attributes:
+No additional status values are invented in this delivery.
 
-- product
-- variant
-- quantity
+### OrderStatus
 
----
-
-### Order
-
-Represents the formal commercial commitment generated by the buyer.
-
-Attributes:
-
-- identifier
-- buyer
-- items
-- total
-- status
-- creationDate
-
-Relationships:
-
-- One Order belongs to one Buyer.
-- One Order contains multiple OrderItems.
-- One Order is associated with billing.
-- One Order may involve payment.
-- Physical orders involve shipment.
-- Orders may participate in return and refund processes.
-
-Lifecycle defined by the specification:
+The specification defines:
 
 ```text
 CART
-  ↓
 PENDING_PAYMENT
-  ↓
 PAID
-  ↓
 SHIPPED
-  ↓
-DELIVERED / COMPLETED
+DELIVERED
+COMPLETED
 ```
 
-A finalized order cannot be modified.
+The specification writes "Delivered / Finalized"; therefore the distinction between `DELIVERED` and `COMPLETED` should be confirmed in the next refinement of the requirements.
 
 ---
 
-### OrderItem
+## 3. General Value Objects
 
-Represents a product included in an order.
+### Email
 
-Attributes:
+Represents the user's email address and centralizes email validation.
 
-- product
-- variant
-- quantity
-- unitPrice
+### Money
 
----
-
-### Invoice
-
-Represents billing information associated with a purchase.
-
-Attributes:
-
-- identifier
-- order
-- issueDate
-- subtotal
-- total
-
-The functional specification establishes billing as an included process but does not define a complete invoice state catalog.
-
----
-
-### Payment
-
-Represents the payment validation associated with an order.
-
-Attributes:
-
-- identifier
-- order
-- amount
-- status
-- paymentDate
-
-The functional specification states that payment is validated before preparation and shipment. Detailed payment providers and methods are intentionally not defined in this delivery.
-
----
-
-### Shipment
-
-Represents the logistics process for physical products.
-
-Attributes:
-
-- identifier
-- order
-- warehouse
-- status
-- shipmentDate
-- deliveryDate
-
-Physical products require shipment. Digital products are delivered immediately after payment.
-
----
-
-### Return
-
-Represents a product return process.
-
-Attributes:
-
-- identifier
-- order
-- requestDate
-- reason
-- status
-
-The specification includes returns but does not define a complete return-state catalog.
-
----
-
-### Refund
-
-Represents a refund associated with a return.
-
-Attributes:
-
-- identifier
-- order
-- return
-- amount
-- date
-- status
-
-The specification includes refunds but does not define a complete refund-state catalog.
-
----
-
-## 3. Relationships summary
+Represents a monetary value:
 
 ```text
-User
- ├── Buyer
- │    ├── Address
- │    ├── Cart
- │    │    └── CartItem ── Product
- │    └── Order
- │         ├── OrderItem ── Product
- │         ├── Payment
- │         ├── Invoice
- │         ├── Shipment
- │         └── Return
- │              └── Refund
- │
- └── Seller
-      ├── Product
-      │    ├── ProductVariant
-      │    └── Inventory
-      └── Warehouse
-           └── Inventory
-                └── InventoryMovement
+amount
+currency
+```
+
+It is used by:
+
+- Product price
+- Order total
+- Order item price
+- Payment amount
+- Invoice values
+- Refund amount
+
+### Address
+
+Represents a delivery or physical address:
+
+```text
+street
+city
+state
+postalCode
+country
 ```
 
 ---
 
-## 4. Domain constraints
+## 4. Immutability
 
-### User
+Value Objects should not expose operations that mutate their internal state.
 
-- Identification must be unique.
-- Email must be unique.
-- One user has one role.
-
-### Seller
-
-- A seller cannot self-register.
-- Seller registration is performed by an Administrator.
-
-### Inventory
-
-- Inventory is always associated with a Product and a Warehouse.
-- Negative quantities are forbidden.
-- Nonexistent or damaged inventory cannot be reserved.
-
-### Order
-
-- Order follows its defined lifecycle.
-- A finalized order cannot be modified.
-
-### Authorization
-
-Every operation must be executed by an authenticated user, and each participant can only manage information according to their role.
+They are created with their values and then treated as immutable.
 
 ---
 
-## 5. Concepts intentionally left open
+## 5. Equality
 
-The functional specification does not completely define:
+Two Value Objects with the same business values represent the same value.
 
-- Warehouse status values.
-- Complete inventory status values.
-- Cart status values.
-- Payment status catalog.
-- Invoice status catalog.
-- Shipment status catalog.
-- Return status catalog.
-- Refund status catalog.
-- Payment methods.
-- External payment providers.
-- Logistics providers.
-- Tax calculation rules.
-- Shipping cost rules.
+For example:
 
-These concepts should be specified before being converted into additional business rules or value-object catalogs.
+```text
+Money(10000, COP)
+```
 
-This prevents the domain model from inventing requirements that are not present in the functional specification.
+has the same value as another:
+
+```text
+Money(10000, COP)
+```
+
+---
+
+## 6. Design rule
+
+A business concept should become a controlled catalog when the specification defines a finite set of valid business values.
+
+A concept should not be turned into an invented enumeration simply because it could technically have one. The functional specification is the source for the current model.

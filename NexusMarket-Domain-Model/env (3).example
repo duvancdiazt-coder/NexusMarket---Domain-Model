@@ -1,0 +1,5 @@
+MYSQL_USER=nexusmarket
+MYSQL_PASSWORD=change_this_mysql_password
+MYSQL_ROOT_PASSWORD=change_this_root_password
+MONGO_USERNAME=nexus_audit
+MONGO_PASSWORD=change_this_mongo_password
